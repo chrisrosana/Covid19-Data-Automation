@@ -18,7 +18,7 @@ spreadsheet = client.open("Covid19_API")
 # Covid19 API
 url = "https://api.covid19api.com/summary"
 
-# all_countries = []    # no need to make a list since we do it directly into csv
+# all_countries = []  # no need to make a list to store the data
 
 # GET request from Covid19 API
 res = requests.get(
@@ -28,9 +28,9 @@ res = requests.get(
 
 # covid data by countries
 covid_countries_data = res['Countries']
-pprint(covid_countries_data)
+# pprint(covid_countries_data)
 
-# No need to add it on the list. we can do it directly into csv
+# # no need to add data on the list
 # for country_data in covid_countries_data:
 #     # append the data to all_countries list
 #     all_countries.append({
@@ -44,6 +44,16 @@ pprint(covid_countries_data)
 #         "Date": country_data['Date']
 #     })
 
+# sort by total confirmed
+sorted_covid_data = sorted(covid_countries_data,
+                           key=lambda country: country['TotalConfirmed'],
+                           reverse=True)
+# print(sorted_covid_data)
+
+# no need to make a list
+# all_countries = sorted(all_countries, key = lambda i: i['TotalConfirmed'], reverse=True)
+# print(all_countries)
+
 # write csv file
 with open("covid_data.csv", "w") as csv_file:
     csv_writer = writer(csv_file)
@@ -51,12 +61,13 @@ with open("covid_data.csv", "w") as csv_file:
                          "New Confirmed", "Total Confirmed", "Total Deaths",
                          "Total Recovered", "Date"])
 
-    for country_data in covid_countries_data:
+    for country_data in sorted_covid_data:
         # TADAAAA
         csv_writer.writerow([country_data["Country"], country_data["NewDeaths"],
-                            country_data["NewRecovered"], country_data["NewConfirmed"],
-                            country_data["TotalConfirmed"], country_data["TotalDeaths"],
-                            country_data["TotalRecovered"], country_data["Date"]])
+                             country_data["NewRecovered"], country_data["NewConfirmed"],
+                             country_data["TotalConfirmed"], country_data["TotalDeaths"],
+                             country_data["TotalRecovered"], country_data["Date"]])
+
 # read csv file
 content = open("covid_data.csv", "r").read()
 # import csv to Google Sheets
@@ -81,19 +92,3 @@ worksheet.format('B2:G193', {
         "pattern": "#,##0"
     }
 })
-# # function to get a specific key - country, from 'data' which - a list of dictionaries
-# def get_country(listOfDicts, key):
-#     for subVal in listOfDicts:
-#         if subVal['Country'] == key:
-#             return subVal
-#
-#
-# for index in range(2, 6):
-#     # grab the value from a cell in the Google Sheet
-#     country = sheet.cell(index, 1).value  # this grabs the country at row index column 1
-#     country_data = get_country(data, country)
-#
-#     # update a cell
-#     sheet.update(f'B{index}', country_data['NewConfirmed'])
-#     sheet.update(f'C{index}', country_data['TotalConfirmed'])
-#     sheet.update(f'D{index}', country_data['Date'])
